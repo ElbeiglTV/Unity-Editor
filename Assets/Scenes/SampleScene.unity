@@ -246,6 +246,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   highlightedInt: 0
   typePopup: AttributeTestClass
+  typePopupList:
+  - AttributeTestClass
+  - AttributeTestClass
+  - AttributeTestClass
+  stringPopup: carlos
+  stringPopupList:
+  - carlos
+  jsonStringPopup: Option 1
+  jsonStringPopupList:
+  - Option 1
+  - Option 1
 --- !u!4 &1148523076
 Transform:
   m_ObjectHideFlags: 0

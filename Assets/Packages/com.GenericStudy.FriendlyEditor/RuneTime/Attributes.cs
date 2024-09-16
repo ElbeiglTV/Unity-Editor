@@ -25,4 +25,20 @@ namespace FriendlyEditor.UtilityAttributes
         }
     }
     #endregion
+    #region StringPopupAttribute
+    public class StringPopupAttribute : PropertyAttribute
+    {
+        public string[] values;
+        public string jsonPath;
+
+        public StringPopupAttribute(params string[] values)
+        {
+            this.values = values;
+        }
+        public StringPopupAttribute(string jsonPath)
+        {
+            this.jsonPath = jsonPath;
+        }
+    }
+    #endregion
 }

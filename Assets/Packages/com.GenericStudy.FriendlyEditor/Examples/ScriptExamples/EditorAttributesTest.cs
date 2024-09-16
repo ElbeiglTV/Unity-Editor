@@ -2,7 +2,7 @@ using FriendlyEditor.UtilityAttributes;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+[RequireComponent(typeof(BoxCollider))]
 public class EditorAttributesTest : MonoBehaviour
 {
     #region Highlight Example
@@ -49,6 +49,11 @@ public class EditorAttributesTest : MonoBehaviour
     [StringPopup("Packages/com.GenericStudy.FriendlyEditor/Examples/JsonExamples/PopupJsonExample.Json")]
     public List<string> jsonStringPopupList = new List<string>();
 
+    #endregion
+    #region GetRequieredComponent Example
 
+    // gets the required component and saves it in the use variable along with requireComponent 
+    [GetRequieredComponent(typeof(BoxCollider))] //for this example we are using BoxCollider
+    public Collider getCollider; //this will get the BoxCollider component and save it in the getCollider variable typof collider
     #endregion
 }

@@ -277,6 +277,35 @@ namespace FriendlyEditor.UtilityAttributes
 
 
     #endregion
+    #region GetRequieredComponentAttribute
+    [CustomPropertyDrawer(typeof(GetRequieredComponentAttribute))]
+    public class GetRequieredComponentDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            GetRequieredComponentAttribute requiredComponent = (GetRequieredComponentAttribute)attribute;
+
+            if (property.propertyType == SerializedPropertyType.ObjectReference)
+            {
+                EditorGUI.PropertyField(position, property, label);
+
+                if (property.objectReferenceValue == null)
+                {
+                    Component component = (Component)property.serializedObject.targetObject;
+                    property.objectReferenceValue = component.GetComponent(requiredComponent.requiredComponent);
+                }
+                else if (!requiredComponent.requiredComponent.IsAssignableFrom(property.objectReferenceValue.GetType()))
+                {
+                    property.objectReferenceValue = null;
+                }
+            }
+            else
+            {
+                EditorGUI.LabelField(position, label.text, "Use [GetRequieredComponent] with a Component field.");
+            }
+        }
+    }
+    #endregion
 }
 
 

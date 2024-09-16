@@ -41,4 +41,15 @@ namespace FriendlyEditor.UtilityAttributes
         }
     }
     #endregion
+    #region ImplisitRequieredComponentAttribute
+    public class GetRequieredComponentAttribute : PropertyAttribute
+    {
+        public System.Type requiredComponent;
+
+        public GetRequieredComponentAttribute(System.Type requiredComponent)
+        {
+            this.requiredComponent = requiredComponent;
+        }
+    }
+    #endregion
 }

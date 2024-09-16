@@ -12,6 +12,7 @@ namespace FriendlyEditor.UtilityAttributes
         {
             this.color = new Color(r, g, b);
         }
+
     }
     #endregion
     #region TypePopupAttribute
@@ -41,7 +42,7 @@ namespace FriendlyEditor.UtilityAttributes
         }
     }
     #endregion
-    #region ImplisitRequieredComponentAttribute
+    #region GetRequieredComponentAttribute
     public class GetRequieredComponentAttribute : PropertyAttribute
     {
         public System.Type requiredComponent;

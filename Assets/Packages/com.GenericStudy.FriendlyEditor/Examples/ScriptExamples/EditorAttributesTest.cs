@@ -6,8 +6,10 @@ using UnityEngine;
 public class EditorAttributesTest : MonoBehaviour
 {
     #region Highlight Example
+
     [Highlight(1f, 1f, 0f)]
     public int highlightedInt;
+
     #endregion
 
     #region TypePopup Example
@@ -55,5 +57,6 @@ public class EditorAttributesTest : MonoBehaviour
     // gets the required component and saves it in the use variable along with requireComponent 
     [GetRequieredComponent(typeof(BoxCollider))] //for this example we are using BoxCollider
     public Collider getCollider; //this will get the BoxCollider component and save it in the getCollider variable typof collider
+
     #endregion
 }

@@ -260,7 +260,7 @@ MonoBehaviour:
   - Option 1
   getCollider: {fileID: 1148523077}
   TString: hola
-  TLife2: 20
+  TLife2: 21
   TLife3: 20
 --- !u!4 &1148523076
 Transform:

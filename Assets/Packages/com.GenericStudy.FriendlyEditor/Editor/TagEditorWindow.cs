@@ -34,7 +34,8 @@ public class TagEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        GUILayout.Label("Tag Filter", EditorStyles.boldLabel);
+        GUILayout.Space(10);
+        //GUILayout.Label("Tag Filter", EditorStyles.boldLabel);
 
         // Mostrar popup para seleccionar una etiqueta
         #region Popup de selección de etiqueta
@@ -110,6 +111,7 @@ public class TagEditorWindow : EditorWindow
         }
         #endregion
         GUILayout.EndScrollView();
+        Repaint();
     }
 
 

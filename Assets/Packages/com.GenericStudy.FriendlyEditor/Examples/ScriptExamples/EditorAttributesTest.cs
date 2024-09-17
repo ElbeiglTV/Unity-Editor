@@ -59,4 +59,20 @@ public class EditorAttributesTest : MonoBehaviour
     public Collider getCollider; //this will get the BoxCollider component and save it in the getCollider variable typof collider
 
     #endregion
+
+    #region DebugTagAttribute Example
+    //using DebugTagAttribute to filter the fields in the TagEditorWindow
+    [DebugTag("TestLife"), DebugTag("Private")]
+    int TLife = 10;
+
+    [DebugTag("TestString"), DebugTag("Public")]
+    public string TString;
+
+    [DebugTag("TestLife"), DebugTag("Public")]
+    public int TLife2 = 20;
+
+    [DebugTag("TestLife"), DebugTag("Public")]
+    public int TLife3 = 20;
+
+    #endregion
 }

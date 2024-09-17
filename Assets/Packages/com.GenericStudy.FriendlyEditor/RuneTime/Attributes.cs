@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace FriendlyEditor.UtilityAttributes
@@ -53,4 +54,17 @@ namespace FriendlyEditor.UtilityAttributes
         }
     }
     #endregion
+    #region TagAttribute
+    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
+    public class DebugTagAttribute : Attribute
+    {
+        public string Label { get; private set; }
+
+        public DebugTagAttribute(string label)
+        {
+            this.Label = label;
+        }
+    }
+    #endregion
+
 }

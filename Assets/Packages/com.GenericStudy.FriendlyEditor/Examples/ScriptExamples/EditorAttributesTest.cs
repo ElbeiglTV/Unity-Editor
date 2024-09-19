@@ -74,5 +74,12 @@ public class EditorAttributesTest : MonoBehaviour
     [DebugTag("TestLife"), DebugTag("Public")]
     public int TLife3 = 20;
 
+    NoMonobehebiourTest noMonobehebiourTest = new NoMonobehebiourTest();
+
+    private void OnValidate()
+    {
+        if (noMonobehebiourTest != null) return;
+        noMonobehebiourTest = new NoMonobehebiourTest();
+    }
     #endregion
 }

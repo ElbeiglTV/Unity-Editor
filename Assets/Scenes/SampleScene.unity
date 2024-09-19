@@ -261,7 +261,7 @@ MonoBehaviour:
   getCollider: {fileID: 1148523077}
   TString: hola
   TLife2: 21
-  TLife3: 20
+  TLife3: 22
 --- !u!4 &1148523076
 Transform:
   m_ObjectHideFlags: 0

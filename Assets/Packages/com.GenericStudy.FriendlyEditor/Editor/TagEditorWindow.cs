@@ -215,10 +215,13 @@ public class TagEditorWindow : EditorWindow
             {
                 var fields = monoBehaviour.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
+
+
                 foreach (var field in fields)
                 {
                     var tagAttributes = field.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true);
                     var fieldTags = tagAttributes.Select(a => ((FriendlyEditor.UtilityAttributes.DebugTagAttribute)a).Label).ToList();
+
 
                     // Verificar que el campo tenga todas las etiquetas seleccionadas
                     if (isAdditive)

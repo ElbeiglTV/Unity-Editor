@@ -1,10 +1,10 @@
-using UnityEngine;
-using UnityEditor;
-using FriendlyEditor.UtilityAttributes;
-using System.Collections.Generic;
-using System.Linq;
+using GluonGui.WorkspaceWindow.Views.WorkspaceExplorer;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 namespace FriendlyEditor.UtilityAttributes
 {
@@ -156,7 +156,7 @@ namespace FriendlyEditor.UtilityAttributes
 
             if (stringPopup.values != null)
             {
-               options = stringPopup.values;
+                options = stringPopup.values;
             }
             else if (!string.IsNullOrEmpty(stringPopup.jsonPath))
             {
@@ -237,25 +237,44 @@ namespace FriendlyEditor.UtilityAttributes
         private void LoadOptions(string jsonPath)
         {
             options = new string[0];
+            if (jsonPath.Contains("/Resources/"))
+            {
+                var JsonName = jsonPath.Replace("/Resources/", "");
 
-            // Construir la ruta completa del archivo JSON
-            string fullPath = Path.Combine(Application.dataPath, jsonPath);
-            if (!File.Exists(fullPath))
-            {
-                Debug.LogError($"JSON file not found at: {fullPath}");
-                return;
+                try
+                {
+                    // Leer el archivo JSON
+                    string json = Resources.Load<TextAsset>(JsonName).text;
+                    // Suponemos que el JSON tiene un array de opciones
+                    options = JsonUtility.FromJson<JsonOptionsData>(json).options;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error loading JSON file: {e.Message}");
+                }
+                
             }
+            else
+            {
+                // Construir la ruta completa del archivo JSON
+                string fullPath = Path.Combine(Application.dataPath, jsonPath);
+                if (!File.Exists(fullPath))
+                {
+                    Debug.LogError($"JSON file not found at: {fullPath}");
+                    return;
+                }
 
-            try
-            {
-                // Leer el archivo JSON
-                string json = File.ReadAllText(fullPath);
-                // Suponemos que el JSON tiene un array de opciones
-                options = JsonUtility.FromJson<JsonOptionsData>(json).options;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error loading JSON file: {e.Message}");
+                try
+                {
+                    // Leer el archivo JSON
+                    string json = File.ReadAllText(fullPath);
+                    // Suponemos que el JSON tiene un array de opciones
+                    options = JsonUtility.FromJson<JsonOptionsData>(json).options;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error loading JSON file: {e.Message}");
+                }
             }
         }
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

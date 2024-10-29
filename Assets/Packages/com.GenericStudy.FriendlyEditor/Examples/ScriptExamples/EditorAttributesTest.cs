@@ -13,30 +13,30 @@ public class EditorAttributesTest : MonoBehaviour
     #endregion
 
     #region TypePopup Example
-    [TypePopup(typeof(AttributeTestParentClass))]
-    public string typePopup;
+  //  [TypePopup(typeof(AttributeTestParentClass))]
+   // public string typePopup;
 
-    public Type SelectedType
-    {
-        get => Type.GetType(typePopup);
-        set => typePopup = value?.FullName;
-    }
+   // public Type SelectedType
+   // {
+   //     get => Type.GetType(typePopup);
+   //     set => typePopup = value?.FullName;
+   // }
 
-    [TypePopup(typeof(AttributeTestParentClass))]
-    public List<string> typePopupList = new List<string>();
+  //  [TypePopup(typeof(AttributeTestParentClass))]
+  //  public List<string> typePopupList = new List<string>();
 
-    public List<Type> SelectedTypes
-    {
-        get => typePopupList.ConvertAll(Type.GetType);
-        set => typePopupList = value.ConvertAll(t => t.FullName);
-    }
+   // public List<Type> SelectedTypes
+   // {
+   //     get => typePopupList.ConvertAll(Type.GetType);
+   //     set => typePopupList = value.ConvertAll(t => t.FullName);
+  //  }
 
     #endregion
 
     #region StringPopup Example
 
     //using string array for Options of popup
-    [StringPopup(new[]{"carlos","juan"})]
+    [StringPopup(new[] { "carlos", "juan" })]
     public string stringPopup;
 
     //using string array for Options of popup in list
@@ -44,7 +44,7 @@ public class EditorAttributesTest : MonoBehaviour
     public List<string> stringPopupList;
 
     //using json file for Options of popup
-    [StringPopup("Packages/com.GenericStudy.FriendlyEditor/Examples/JsonExamples/PopupJsonExample.Json")]
+    [StringPopup("/Resources/PopupJsonExample")]
     public string jsonStringPopup;
 
     //using json file for Options of popup in list
@@ -74,12 +74,12 @@ public class EditorAttributesTest : MonoBehaviour
     [DebugTag("TestLife"), DebugTag("Public")]
     public int TLife3 = 20;
 
-    NoMonobehebiourTest noMonobehebiourTest = new NoMonobehebiourTest();
+    //NoMonobehebiourTest noMonobehebiourTest = new NoMonobehebiourTest();
 
     private void OnValidate()
     {
-        if (noMonobehebiourTest != null) return;
-        noMonobehebiourTest = new NoMonobehebiourTest();
+      //  if (noMonobehebiourTest != null) return;
+       // noMonobehebiourTest = new NoMonobehebiourTest();
     }
     #endregion
 }

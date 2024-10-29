@@ -246,11 +246,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightedInt: 0
-  typePopup: AttributeTestClass
-  typePopupList:
-  - AttributeTestClass
-  - AttributeTestClass
-  - AttributeTestClass
   stringPopup: carlos
   stringPopupList:
   - carlos
@@ -350,11 +345,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightedInt: 0
-  typePopup: AttributeTestClass
-  typePopupList:
-  - AttributeTestClass
-  - AttributeTestClass
-  - AttributeTestClass
   stringPopup: carlos
   stringPopupList:
   - carlos

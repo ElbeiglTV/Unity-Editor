@@ -130,10 +130,22 @@ public class TagEditorWindow : EditorWindow
         foreach (var monoBehaviour in allMonoBehaviours)
         {
             var fields = monoBehaviour.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+            var propertys = monoBehaviour.GetType().GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
             foreach (var field in fields)
             {
                 var tagAttributes = field.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true);
+                foreach (FriendlyEditor.UtilityAttributes.DebugTagAttribute tagAttribute in tagAttributes)
+                {
+                    if (!availableTags.Contains(tagAttribute.Label))
+                    {
+                        availableTags.Add(tagAttribute.Label);
+                    }
+                }
+            }
+            foreach (var property in propertys)
+            {
+                var tagAttributes = property.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true);
                 foreach (FriendlyEditor.UtilityAttributes.DebugTagAttribute tagAttribute in tagAttributes)
                 {
                     if (!availableTags.Contains(tagAttribute.Label))
@@ -158,12 +170,21 @@ public class TagEditorWindow : EditorWindow
             foreach (var monoBehaviour in allMonoBehaviours)
             {
                 var fields = monoBehaviour.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+                var properties = monoBehaviour.GetType().GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
                 IEnumerable<FieldInfo> groupedFields;
+                IEnumerable<PropertyInfo> groupedProperties;
+
                 if (isAdditive)
                 {
                     groupedFields = fields
                     .Where(field => tagFilters.Any(tag => field.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true)
+                        .Cast<FriendlyEditor.UtilityAttributes.DebugTagAttribute>()
+                        .Any(attr => attr.Label == tag)))
+                    .ToList();
+
+                    groupedProperties = properties
+                    .Where(prop => tagFilters.Any(tag => prop.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true)
                         .Cast<FriendlyEditor.UtilityAttributes.DebugTagAttribute>()
                         .Any(attr => attr.Label == tag)))
                     .ToList();
@@ -175,11 +196,15 @@ public class TagEditorWindow : EditorWindow
                         .Cast<FriendlyEditor.UtilityAttributes.DebugTagAttribute>()
                         .Any(attr => attr.Label == tag)))
                     .ToList();
+
+                    groupedProperties = properties
+                    .Where(prop => tagFilters.All(tag => prop.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true)
+                        .Cast<FriendlyEditor.UtilityAttributes.DebugTagAttribute>()
+                        .Any(attr => attr.Label == tag)))
+                    .ToList();
                 }
 
-
-
-                if (groupedFields.Count() > 0)
+                if (groupedFields.Any() || groupedProperties.Any())
                 {
                     // Estado del foldout para el objeto
                     bool foldoutState = foldouts.ContainsKey(monoBehaviour.name) ? foldouts[monoBehaviour.name] : true;
@@ -190,6 +215,7 @@ public class TagEditorWindow : EditorWindow
 
                     if (foldoutState)
                     {
+                        // Mostrar campos
                         foreach (var field in groupedFields)
                         {
                             object fieldValue = field.GetValue(monoBehaviour);
@@ -204,6 +230,22 @@ public class TagEditorWindow : EditorWindow
                             GUILayout.Label($".{field.Name}: {fieldValue}");
                             EditorGUILayout.EndHorizontal();
                         }
+
+                        // Mostrar propiedades
+                        foreach (var property in groupedProperties)
+                        {
+                            object propertyValue = property.GetValue(monoBehaviour);
+
+                            // Dibuja la propiedad
+                            EditorGUILayout.BeginHorizontal();
+                            if (GUILayout.Button(monoBehaviour.name, EditorStyles.linkLabel))
+                            {
+                                Selection.activeObject = monoBehaviour.gameObject;
+                                EditorGUIUtility.PingObject(monoBehaviour.gameObject);
+                            }
+                            GUILayout.Label($".{property.Name}: {propertyValue}");
+                            EditorGUILayout.EndHorizontal();
+                        }
                     }
                 }
             }
@@ -214,50 +256,51 @@ public class TagEditorWindow : EditorWindow
             foreach (var monoBehaviour in allMonoBehaviours)
             {
                 var fields = monoBehaviour.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+                var properties = monoBehaviour.GetType().GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy);
 
-
-
+                // Buscar en campos
                 foreach (var field in fields)
                 {
                     var tagAttributes = field.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true);
                     var fieldTags = tagAttributes.Select(a => ((FriendlyEditor.UtilityAttributes.DebugTagAttribute)a).Label).ToList();
 
-
                     // Verificar que el campo tenga todas las etiquetas seleccionadas
-                    if (isAdditive)
+                    if (isAdditive ? tagFilters.All(fieldTags.Contains) : tagFilters.Any(fieldTags.Contains))
                     {
+                        object fieldValue = field.GetValue(monoBehaviour);
 
-                        if (tagFilters.All(fieldTags.Contains))
+                        // Dibuja el campo con la funcionalidad de selección
+                        EditorGUILayout.BeginHorizontal();
+                        if (GUILayout.Button(monoBehaviour.name, EditorStyles.linkLabel))
                         {
-                            object fieldValue = field.GetValue(monoBehaviour);
-
-                            // Dibuja el campo con la funcionalidad de selección
-                            EditorGUILayout.BeginHorizontal();
-                            if (GUILayout.Button(monoBehaviour.name, EditorStyles.linkLabel))
-                            {
-                                Selection.activeObject = monoBehaviour.gameObject;
-                                EditorGUIUtility.PingObject(monoBehaviour.gameObject);
-                            }
-                            GUILayout.Label($".{field.Name}: {fieldValue}");
-                            EditorGUILayout.EndHorizontal();
+                            Selection.activeObject = monoBehaviour.gameObject;
+                            EditorGUIUtility.PingObject(monoBehaviour.gameObject);
                         }
+                        GUILayout.Label($".{field.Name}: {fieldValue}");
+                        EditorGUILayout.EndHorizontal();
                     }
-                    else
-                    {
-                        if (tagFilters.Any(fieldTags.Contains))
-                        {
-                            object fieldValue = field.GetValue(monoBehaviour);
+                }
 
-                            // Dibuja el campo con la funcionalidad de selección
-                            EditorGUILayout.BeginHorizontal();
-                            if (GUILayout.Button(monoBehaviour.name, EditorStyles.linkLabel))
-                            {
-                                Selection.activeObject = monoBehaviour.gameObject;
-                                EditorGUIUtility.PingObject(monoBehaviour.gameObject);
-                            }
-                            GUILayout.Label($".{field.Name}: {fieldValue}");
-                            EditorGUILayout.EndHorizontal();
+                // Buscar en propiedades
+                foreach (var property in properties)
+                {
+                    var tagAttributes = property.GetCustomAttributes(typeof(FriendlyEditor.UtilityAttributes.DebugTagAttribute), true);
+                    var propertyTags = tagAttributes.Select(a => ((FriendlyEditor.UtilityAttributes.DebugTagAttribute)a).Label).ToList();
+
+                    // Verificar que la propiedad tenga todas las etiquetas seleccionadas
+                    if (isAdditive ? tagFilters.All(propertyTags.Contains) : tagFilters.Any(propertyTags.Contains))
+                    {
+                        object propertyValue = property.GetValue(monoBehaviour);
+
+                        // Dibuja la propiedad con la funcionalidad de selección
+                        EditorGUILayout.BeginHorizontal();
+                        if (GUILayout.Button(monoBehaviour.name, EditorStyles.linkLabel))
+                        {
+                            Selection.activeObject = monoBehaviour.gameObject;
+                            EditorGUIUtility.PingObject(monoBehaviour.gameObject);
                         }
+                        GUILayout.Label($".{property.Name}: {propertyValue}");
+                        EditorGUILayout.EndHorizontal();
                     }
                 }
             }

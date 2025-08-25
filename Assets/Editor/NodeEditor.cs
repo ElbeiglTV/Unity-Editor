@@ -66,7 +66,9 @@ public class BehaviourNode : BaseNode
 
 public class NodeEditorWindow : EditorWindow
 {
-    [SerializeField] private List<MyNode> nodes = new();
+    [SerializeField] private List<BaseNode> nodes = new();
+    private BaseNode connectingNode = null; // nodo desde el que se arrastra la conexión
+    private bool connectingTruePort = true; // si estamos conectando True o False
     private Vector2 scrollPos;
 
     [MenuItem("Window/Custom/Node Editor")]
@@ -80,66 +82,165 @@ public class NodeEditorWindow : EditorWindow
         Rect canvas = new Rect(0, 0, 2000, 2000);
         GUILayoutUtility.GetRect(canvas.width, canvas.height);
 
-        SerializedObject so = new SerializedObject(this);
-        SerializedProperty nodesProp = so.FindProperty("nodes");
-
         BeginWindows();
-
         for (int i = 0; i < nodes.Count; i++)
         {
-            SerializedProperty nodeProp = nodesProp.GetArrayElementAtIndex(i);
-
-            // 🔥 Altura dinámica
-            float propertyHeight = EditorGUI.GetPropertyHeight(nodeProp, true);
-            float headerHeight = 30f; // espacio para título y circulito
-            float dynamicHeight = propertyHeight + headerHeight;
-
-            MyNode node = nodes[i];
-            Rect rect = new Rect(node.position, new Vector2(250, dynamicHeight));
-
-            rect = GUI.Window(i, rect, id => DrawNodeWindow(id, node, nodesProp), node.title);
-            node.position = rect.position;
+            int index = i; // copia local
+            nodes[index].rect = GUI.Window(index, nodes[index].rect, id => DrawNodeWindow(id, nodes[index]), nodes[index].title);
         }
-
         EndWindows();
+
+        DrawConnections();
+        HandleConnections(Event.current);
         EditorGUILayout.EndScrollView();
 
-        if (GUILayout.Button("Add Node"))
+        // 🔌 Dibujar conexiones
+        foreach (BaseNode node in nodes)
         {
-            nodes.Add(new MyNode()
+            if (node is DecisionNode decision)
             {
-                title = "New Node " + nodes.Count,
-                position = new Vector2(100, 100)
-            });
+                if (decision.trueNode != null)
+                    DrawConnection(node.rect, decision.trueNode.rect, Color.green);
+                if (decision.falseNode != null)
+                    DrawConnection(node.rect, decision.falseNode.rect, Color.red);
+            }
         }
+
+        if (GUILayout.Button("Add Decision Node"))
+            nodes.Add(new DecisionNode() { rect = new Rect(100, 100, 250, 120) });
+        if (GUILayout.Button("Add Behaviour Node"))
+            nodes.Add(new BehaviourNode() { rect = new Rect(200, 200, 250, 80) });
 
         if (e.type == EventType.MouseDrag) Repaint();
     }
 
-    private void DrawNodeWindow(int id, MyNode node, SerializedProperty nodesProp)
+
+    private void DrawNodeWindow(int id, BaseNode node)
     {
-        SerializedProperty nodeProp = nodesProp.GetArrayElementAtIndex(id);
+        // Fondo
+        GUIStyle areaStyle = new GUIStyle(GUI.skin.box);
+        areaStyle.normal.background = node.type == NodeTypes.Decision
+            ? MakeTex(2, 2, new Color(0.3f, 0.6f, 1f))
+            : MakeTex(2, 2, new Color(0.6f, 1f, 0.3f));
 
-        // El rect completo de la ventana
-        Rect fullRect = new Rect(0, 0, 250, EditorGUI.GetPropertyHeight(nodeProp, true) + 30);
+        GUI.Box(new Rect(0, 0, node.rect.width, node.rect.height), GUIContent.none, areaStyle);
 
-        // --- Fondo ---
-        GUI.Box(fullRect, GUIContent.none);
-
-        // --- Circulito arriba izquierda ---
+        // Circulito arriba izquierda
         Handles.color = Color.gray;
         Handles.DrawSolidDisc(new Vector3(12, 15, 0), Vector3.forward, 6);
-        Handles.color = Color.cyan; // O NodeColor(node)
+        Handles.color = node.type == NodeTypes.Decision ? Color.cyan : Color.green;
         Handles.DrawSolidDisc(new Vector3(12, 15, 0), Vector3.forward, 4);
 
-        // --- Inspector interno ---
-        Rect contentRect = new Rect(5, 25, fullRect.width - 10, fullRect.height - 30);
-        EditorGUI.BeginChangeCheck();
-        EditorGUI.PropertyField(contentRect, nodeProp, true);
-        if (EditorGUI.EndChangeCheck())
-            nodeProp.serializedObject.ApplyModifiedProperties();
+        // Foldout / Header
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(10);
+        node.isExpanded = EditorGUILayout.Foldout(node.isExpanded, node.title);
+        GUILayout.EndHorizontal();
+
+        if (node.isExpanded)
+        {
+            GUILayout.Space(10);
+
+            if (node is DecisionNode decision)
+            {
+                // Botones True / False
+                DrawDecisionButtons(decision);
+            }
+            else if (node is BehaviourNode)
+            {
+                GUILayout.Label("End Behaviour");
+            }
+        }
 
         GUI.DragWindow();
+    }
+    private void DrawDecisionButtons(DecisionNode decision)
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(20);
+        if (GUILayout.Button(decision.trueNode != null ? "Restart True Node" : "New True Node", GUILayout.ExpandWidth(false)))
+        {
+            if (decision.trueNode != null)
+            {
+                nodes.Remove(decision.trueNode);
+                decision.trueNode = null;
+            }
+            connectingNode = decision;
+            connectingTruePort = true;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(20);
+        if (GUILayout.Button(decision.falseNode != null ? "Restart False Node" : "New False Node", GUILayout.ExpandWidth(false)))
+        {
+            if (decision.falseNode != null)
+            {
+                nodes.Remove(decision.falseNode);
+                decision.falseNode = null;
+            }
+            connectingNode = decision;
+            connectingTruePort = false;
+        }
+        GUILayout.EndHorizontal();
+    }
+    private void HandleConnections(Event e)
+    {
+        if (connectingNode != null)
+        {
+            Vector3 mousePos = e.mousePosition;
+            Handles.DrawBezier(
+                new Vector3(connectingNode.rect.xMax, connectingNode.rect.center.y),
+                mousePos,
+                new Vector3(connectingNode.rect.xMax + 50, connectingNode.rect.center.y),
+                mousePos,
+                Color.yellow,
+                null,
+                3f
+            );
+
+            if (e.type == EventType.MouseDown && e.button == 0)
+            {
+                // Verificar si se clickea sobre otro nodo
+                foreach (var node in nodes)
+                {
+                    if (node == connectingNode) continue;
+                    if (node.rect.Contains(e.mousePosition))
+                    {
+                        ConnectNodes(connectingNode, node, connectingTruePort);
+                        connectingNode = null;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void DrawConnections()
+    {
+        foreach (BaseNode node in nodes)
+        {
+            if (node is DecisionNode decision)
+            {
+                if (decision.trueNode != null)
+                    DrawConnection(node.rect, decision.trueNode.rect, Color.green);
+                if (decision.falseNode != null)
+                    DrawConnection(node.rect, decision.falseNode.rect, Color.red);
+            }
+        }
+    }
+
+    private void DrawConnection(Rect from, Rect to, Color color)
+    {
+        Handles.DrawBezier(
+            new Vector3(from.xMax, from.center.y),
+            new Vector3(to.xMin, to.center.y),
+            new Vector3(from.xMax + 50, from.center.y),
+            new Vector3(to.xMin - 50, to.center.y),
+            color,
+            null,
+            3f
+        );
     }
 
     private void DrawNode(BaseNode node)

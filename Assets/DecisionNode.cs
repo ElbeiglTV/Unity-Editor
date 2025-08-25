@@ -1,5 +1,10 @@
 using System;
 using UnityEngine;
+
+namespace Old
+{
+
+
 [Serializable]
 public class DecisionNode
 {
@@ -28,4 +33,5 @@ public class DecisionNode
 public enum Questions
 {
    isWall,isFloor
+}
 }
